@@ -4,7 +4,6 @@ import dpkt
 import socket
 import datetime
 from scrubbable import Scrubbable
-from lazyreader import PCAPReader
 from dpkt.compat import compat_ord
 
 def mac_addr(address):
@@ -44,17 +43,10 @@ def show_flow(data):
 
 subrubbablePCAP = Scrubbable()
 
-pcap = PCAPReader("new.pcap")
-
-last = None
-
-# For each packet in the pcap process the contents
-for packet in pcap:
-    timestamp = packet[0]
-    buffer = packet[1]
-    subrubbablePCAP.append(timestamp, buffer)
-
-pcap = None
+with open("test.pcap", 'rb') as f:
+    pcap = dpkt.pcap.Reader(f)
+    for timestamp, buffer in pcap:
+        subrubbablePCAP.append(timestamp, buffer)
 
 print("Scrubber loaded!")
 
@@ -75,6 +67,10 @@ timestamps = list(subrubbablePCAP.timestamps.keys())
 aTimestamp = timestamps[1] # get timesamp of 2nd packet
 currentData = subrubbablePCAP.get(aTimestamp)
 show_flow(currentData)
+
+print("---")
+
+print(str(len(timestamps)))
 
 print("")
 x = input("Press 'Enter' to quit")
